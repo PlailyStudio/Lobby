@@ -14,8 +14,7 @@
     const isThreads = /Barcelona/i.test(userAgent);
     const isFacebook = /FBAN|FBAV|FB_IAB/i.test(userAgent);
     const isTikTok = /Musical\.ly|TikTok/i.test(userAgent);
-    const isDiscord = /Discord/i.test(userAgent);
-    const isKnownInApp = /Twitter|Snapchat|LinkedInApp|KAKAOTALK|NAVER|DaumApps|Line\//i.test(userAgent);
+    const isKnownInApp = /Twitter|Snapchat|LinkedInApp|KAKAOTALK|DaumApps|Line\//i.test(userAgent);
     const isAndroidWebView = isAndroid && (/; wv\)/i.test(userAgent) || /\bwv\b/i.test(userAgent));
 
     return {
@@ -25,8 +24,7 @@
       isThreads,
       isFacebook,
       isTikTok,
-      isDiscord,
-      isInApp: isInstagram || isThreads || isFacebook || isTikTok || isDiscord || isKnownInApp || isAndroidWebView,
+      isInApp: isInstagram || isThreads || isFacebook || isTikTok || isKnownInApp || isAndroidWebView,
     };
   }
 
@@ -35,7 +33,6 @@
     if (environment.isThreads) return 'Threads';
     if (environment.isFacebook) return 'Facebook';
     if (environment.isTikTok) return 'TikTok';
-    if (environment.isDiscord) return 'Discord';
     return '인앱 브라우저';
   }
 

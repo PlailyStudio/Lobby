@@ -31,7 +31,7 @@ button { font: inherit; }
 .page-shell {
   display: grid;
   min-height: 100svh;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr;
   background:
     radial-gradient(circle at 50% 42%, rgba(16, 26, 51, 0.045), transparent 32rem),
     var(--white);
@@ -149,11 +149,11 @@ h1 {
 
 .text-button:hover { color: var(--black); }
 
-.page-footer {
-  padding: 20px 24px calc(24px + env(safe-area-inset-bottom));
+.recommendation {
+  margin: 44px 0 0;
   color: var(--gray-600);
   font-size: 12px;
-  text-align: center;
+  line-height: 1.5;
 }
 
 button:focus-visible,
