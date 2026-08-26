@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f3ec" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="인앱 브라우저를 벗어나 example.com을 기본 브라우저에서 엽니다." />
+    <title>외부 브라우저로 이동 | Example</title>
+    <style>
+      :root {
+        --ink: #18201c;
+        --muted: #6f7772;
+        --green: #1f8f64;
+        --green-dark: #14724d;
+        --cream: #f5f3ec;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body { min-height: 100%; }
+
+      body {
+        margin: 0;
+        background: var(--cream);
+        color: var(--ink);
+        font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button, a { -webkit-tap-highlight-color: transparent; }
+      button { font: inherit; }
+
+      .page-shell {
+        position: relative;
+        display: grid;
+        min-height: 100svh;
+        grid-template-rows: auto 1fr auto;
+        overflow: hidden;
+        background:
+          linear-gradient(rgba(24, 32, 28, .035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(24, 32, 28, .035) 1px, transparent 1px),
+          var(--cream);
+        background-size: 34px 34px;
+      }
+
+      .ambient {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .ambient.one {
+        top: -180px;
+        right: -100px;
+        width: 420px;
+        height: 420px;
+        background: rgba(170, 219, 190, .32);
+      }
+
+      .ambient.two {
+        bottom: -170px;
+        left: -120px;
+        width: 360px;
+        height: 360px;
+        background: rgba(232, 215, 166, .34);
+      }
+
+      header {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+        align-items: center;
+        justify-content: space-between;
+        padding: 28px 32px;
+      }
+
+      .wordmark {
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: .16em;
+        text-decoration: none;
+      }
+
+      .wordmark b { color: var(--green); }
+
+      .secure {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .secure::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #42aa78;
+        box-shadow: 0 0 0 4px rgba(66, 170, 120, .12);
+        content: "";
+      }
+
+      .card {
+        position: relative;
+        z-index: 1;
+        align-self: center;
+        justify-self: center;
+        width: min(480px, calc(100% - 40px));
+        margin: 20px 0 48px;
+        padding: 52px 52px 42px;
+        border: 1px solid rgba(255, 255, 255, .85);
+        border-radius: 32px;
+        background: rgba(255, 255, 255, .76);
+        box-shadow: 0 24px 70px rgba(42, 52, 46, .1), 0 2px 8px rgba(42, 52, 46, .04);
+        text-align: center;
+        backdrop-filter: blur(18px);
+      }
+
+      .icon-wrap {
+        display: grid;
+        width: 92px;
+        height: 92px;
+        margin: 0 auto 28px;
+        place-items: center;
+        border-radius: 28px;
+        background: #e5f3eb;
+        color: var(--green-dark);
+        transform: rotate(-2deg);
+      }
+
+      .browser {
+        position: relative;
+        display: block;
+        width: 51px;
+        height: 43px;
+        overflow: hidden;
+        border: 2px solid currentColor;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .42);
+      }
+
+      .browser-bar {
+        display: flex;
+        height: 13px;
+        align-items: center;
+        gap: 3px;
+        padding-left: 6px;
+        border-bottom: 2px solid currentColor;
+      }
+
+      .browser-bar i {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      .arrow {
+        position: absolute;
+        right: 5px;
+        bottom: 0;
+        font-size: 25px;
+        font-weight: 700;
+        line-height: 1;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--green-dark);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .16em;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(32px, 6vw, 43px);
+        font-weight: 760;
+        letter-spacing: -.055em;
+        line-height: 1.16;
+      }
+
+      .description {
+        margin: 18px 0 30px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .mobile-break { display: none; }
+
+      .progress {
+        width: 100%;
+        height: 4px;
+        margin-bottom: 28px;
+        overflow: hidden;
+        border-radius: 99px;
+        background: #e7e7e2;
+      }
+
+      .progress span {
+        display: block;
+        width: 44%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--green);
+        animation: progress 1.45s ease-in-out infinite;
+      }
+
+      @keyframes progress {
+        0% { transform: translateX(-105%); }
+        55% { transform: translateX(85%); }
+        100% { transform: translateX(235%); }
+      }
+
+      .primary, .copy {
+        width: 100%;
+        border: 0;
+        border-radius: 15px;
+        cursor: pointer;
+        font-weight: 750;
+        transition: transform 160ms ease;
+      }
+
+      .primary {
+        display: flex;
+        min-height: 56px;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        background: var(--ink);
+        color: white;
+        box-shadow: 0 10px 24px rgba(24, 32, 28, .16);
+      }
+
+      .primary:hover, .copy:hover { transform: translateY(-1px); }
+      .primary:active, .copy:active { transform: translateY(1px); }
+
+      button:focus-visible {
+        outline: 3px solid rgba(31, 143, 100, .28);
+        outline-offset: 3px;
+      }
+
+      .help {
+        margin: 18px 0 0;
+        color: #868c88;
+        font-size: 12px;
+      }
+
+      .help button {
+        padding: 0;
+        border: 0;
+        border-bottom: 1px solid #a7aca9;
+        background: transparent;
+        color: #59605c;
+        cursor: pointer;
+      }
+
+      footer {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 20px 24px 28px;
+        color: #8a908c;
+        font-size: 11px;
+      }
+
+      .overlay[hidden] { display: none; }
+
+      .overlay {
+        position: fixed;
+        z-index: 10;
+        inset: 0;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .backdrop {
+        position: absolute;
+        inset: 0;
+        border: 0;
+        background: rgba(15, 19, 17, .52);
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+      }
+
+      .guide {
+        position: relative;
+        width: min(520px, 100%);
+        padding: 12px 28px 28px;
+        border-radius: 28px;
+        background: white;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, .22);
+        animation: sheet-in 260ms cubic-bezier(.2, .85, .3, 1);
+      }
+
+      @keyframes sheet-in {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+
+      .handle {
+        width: 42px;
+        height: 4px;
+        margin: 0 auto 23px;
+        border-radius: 99px;
+        background: #d9dcd9;
+      }
+
+      .guide-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .guide-heading p {
+        margin: 0 0 5px;
+        color: var(--green-dark);
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .guide-heading h2 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: -.04em;
+      }
+
+      .close {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: #f1f2ef;
+        color: #59605c;
+        cursor: pointer;
+        font-size: 24px;
+      }
+
+      .steps {
+        display: grid;
+        gap: 12px;
+        margin: 26px 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .steps li {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        border: 1px solid rgba(24, 32, 28, .1);
+        border-radius: 15px;
+        background: #fafaf7;
+      }
+
+      .steps li > span {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 50%;
+        background: #e5f3eb;
+        color: var(--green-dark);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .steps p {
+        margin: 0;
+        color: #4f5752;
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .steps strong { color: var(--ink); }
+
+      .copy {
+        min-height: 52px;
+        background: #e5f3eb;
+        color: var(--green-dark);
+      }
+
+      @media (min-width: 700px) {
+        .overlay { align-items: center; }
+      }
+
+      @media (max-width: 560px) {
+        header { padding: 22px 21px; }
+
+        .card {
+          width: min(100% - 28px, 430px);
+          margin-bottom: 28px;
+          padding: 42px 25px 34px;
+          border-radius: 26px;
+        }
+
+        .icon-wrap {
+          width: 82px;
+          height: 82px;
+          margin-bottom: 24px;
+          border-radius: 24px;
+        }
+
+        .mobile-break { display: block; }
+
+        .guide {
+          padding: 10px 20px 20px;
+          border-radius: 24px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page-shell">
+      <div class="ambient one"></div>
+      <div class="ambient two"></div>
+
+      <header>
+        <a class="wordmark" href="https://example.com" aria-label="Example 홈으로 이동">EXAMPLE<b>.</b></a>
+        <span class="secure">안전한 연결</span>
+      </header>
+
+      <section class="card" aria-live="polite">
+        <div class="icon-wrap" aria-hidden="true">
+          <span class="browser">
+            <span class="browser-bar"><i></i><i></i><i></i></span>
+            <span class="arrow">↗</span>
+          </span>
+        </div>
+
+        <p class="eyebrow">EXTERNAL BROWSER</p>
+        <h1>외부 브라우저로<br />이동하고 있어요</h1>
+        <p class="description">잠시 후 기본 브라우저에서<br class="mobile-break" /> example.com이 열립니다.</p>
+
+        <div class="progress" aria-label="외부 브라우저 연결 중"><span></span></div>
+
+        <button class="primary" id="open-button" type="button">바로 이동하기 <span aria-hidden="true">↗</span></button>
+        <p class="help">자동으로 이동하지 않나요? <button id="help-button" type="button">여기를 눌러주세요</button></p>
+      </section>
+
+      <footer><span>example.com</span><span aria-hidden="true">·</span><span>브라우저 보안 연결</span></footer>
+
+      <div class="overlay" id="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title" hidden>
+        <button class="backdrop" id="backdrop" type="button" aria-label="안내 닫기"></button>
+        <section class="guide">
+          <div class="handle" aria-hidden="true"></div>
+          <div class="guide-heading">
+            <div>
+              <p id="platform-label">인앱 브라우저에서 열었어요</p>
+              <h2 id="guide-title">기본 브라우저에서 여는 방법</h2>
+            </div>
+            <button class="close" id="close-button" type="button" aria-label="안내 닫기">×</button>
+          </div>
+
+          <ol class="steps">
+            <li><span>1</span><p>화면 오른쪽 위의 <strong>···</strong> 또는 <strong>공유</strong> 메뉴를 눌러주세요.</p></li>
+            <li><span>2</span><p><strong>외부 브라우저에서 열기</strong>, <strong>Chrome에서 열기</strong> 또는 <strong>Safari에서 열기</strong>를 선택하세요.</p></li>
+          </ol>
+
+          <button class="copy" id="copy-button" type="button">example.com 주소 복사</button>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      (() => {
+        'use strict';
+
+        const DESTINATION_URL = 'https://example.com';
+        const ua = navigator.userAgent || '';
+        const overlay = document.getElementById('guide-overlay');
+        const platformLabel = document.getElementById('platform-label');
+        const copyButton = document.getElementById('copy-button');
+
+        function detectEnvironment() {
+          const isAndroid = /Android/i.test(ua);
+          const isIOS = /iPhone|iPad|iPod/i.test(ua);
+          const isInstagram = /Instagram/i.test(ua);
+          const isThreads = /Barcelona/i.test(ua);
+          const isFacebook = /FBAN|FBAV|FB_IAB/i.test(ua);
+          const isTikTok = /Musical\.ly|TikTok/i.test(ua);
+          const isKnownInApp = /Twitter|Snapchat|LinkedInApp|KAKAOTALK|NAVER|DaumApps|Line\//i.test(ua);
+          const isAndroidWebView = isAndroid && (/; wv\)/i.test(ua) || /\bwv\b/i.test(ua));
+
+          return {
+            isAndroid,
+            isIOS,
+            isInstagram,
+            isThreads,
+            isFacebook,
+            isTikTok,
+            isInApp: isInstagram || isThreads || isFacebook || isTikTok || isKnownInApp || isAndroidWebView,
+          };
+        }
+
+        function getPlatformName(env) {
+          if (env.isInstagram) return 'Instagram';
+          if (env.isThreads) return 'Threads';
+          if (env.isFacebook) return 'Facebook';
+          if (env.isTikTok) return 'TikTok';
+          return '인앱 브라우저';
+        }
+
+        function showGuide() {
+          const env = detectEnvironment();
+          platformLabel.textContent = getPlatformName(env) + '에서 열었어요';
+          overlay.hidden = false;
+          document.body.style.overflow = 'hidden';
+          document.getElementById('close-button').focus();
+        }
+
+        function hideGuide() {
+          overlay.hidden = true;
+          document.body.style.overflow = '';
+        }
+
+        function openExternalBrowser() {
+          const env = detectEnvironment();
+
+          if (env.isIOS && env.isInstagram) {
+            window.location.replace('instagram://extbrowser/?url=' + encodeURIComponent(DESTINATION_URL));
+            return;
+          }
+
+          if (env.isIOS && env.isThreads) {
+            window.location.replace('barcelona://extbrowser/?url=' + encodeURIComponent(DESTINATION_URL));
+            return;
+          }
+
+          if (env.isAndroid && env.isInApp) {
+            const destination = new URL(DESTINATION_URL);
+            const path = destination.host + destination.pathname + destination.search + destination.hash;
+            window.location.href =
+              'intent://' + path +
+              '#Intent;scheme=https;action=android.intent.action.VIEW;' +
+              'package=com.android.chrome;S.browser_fallback_url=' +
+              encodeURIComponent(DESTINATION_URL) + ';end';
+            return;
+          }
+
+          if (env.isIOS && env.isInApp) {
+            showGuide();
+            return;
+          }
+
+          window.location.replace(DESTINATION_URL);
+        }
+
+        async function copyAddress() {
+          try {
+            await navigator.clipboard.writeText(DESTINATION_URL);
+          } catch (_) {
+            const field = document.createElement('textarea');
+            field.value = DESTINATION_URL;
+            field.setAttribute('readonly', '');
+            field.style.position = 'fixed';
+            field.style.opacity = '0';
+            document.body.appendChild(field);
+            field.select();
+            document.execCommand('copy');
+            field.remove();
+          }
+
+          copyButton.textContent = '주소를 복사했어요';
+          window.setTimeout(() => { copyButton.textContent = 'example.com 주소 복사'; }, 1800);
+        }
+
+        document.getElementById('open-button').addEventListener('click', openExternalBrowser);
+        document.getElementById('help-button').addEventListener('click', showGuide);
+        document.getElementById('close-button').addEventListener('click', hideGuide);
+        document.getElementById('backdrop').addEventListener('click', hideGuide);
+        copyButton.addEventListener('click', copyAddress);
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && !overlay.hidden) hideGuide();
+        });
+
+        window.setTimeout(openExternalBrowser, 450);
+      })();
+    </script>
+  </body>
+</html>
