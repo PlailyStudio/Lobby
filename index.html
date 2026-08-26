@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f5f3ec" />
     <meta name="referrer" content="no-referrer" />
-    <meta name="description" content="인앱 브라우저를 벗어나 example.com을 기본 브라우저에서 엽니다." />
-    <title>외부 브라우저로 이동 | Example</title>
+    <meta name="description" content="인앱 브라우저를 벗어나 plailystudio.itch.io를 기본 브라우저에서 엽니다." />
+    <title>외부 브라우저로 이동 | Plaily Studio</title>
     <style>
       :root {
         --ink: #18201c;
@@ -441,7 +441,7 @@
       <div class="ambient two"></div>
 
       <header>
-        <a class="wordmark" href="https://example.com" aria-label="Example 홈으로 이동">EXAMPLE<b>.</b></a>
+        <a class="wordmark" href="https://plailystudio.itch.io" aria-label="Plaily Studio 홈으로 이동">PLAILY STUDIO<b>.</b></a>
         <span class="secure">안전한 연결</span>
       </header>
 
@@ -455,7 +455,7 @@
 
         <p class="eyebrow">EXTERNAL BROWSER</p>
         <h1>외부 브라우저로<br />이동하고 있어요</h1>
-        <p class="description">잠시 후 기본 브라우저에서<br class="mobile-break" /> example.com이 열립니다.</p>
+        <p class="description">잠시 후 기본 브라우저에서<br class="mobile-break" /> plailystudio.itch.io가 열립니다.</p>
 
         <div class="progress" aria-label="외부 브라우저 연결 중"><span></span></div>
 
@@ -463,7 +463,7 @@
         <p class="help">자동으로 이동하지 않나요? <button id="help-button" type="button">여기를 눌러주세요</button></p>
       </section>
 
-      <footer><span>example.com</span><span aria-hidden="true">·</span><span>브라우저 보안 연결</span></footer>
+      <footer><span>plailystudio.itch.io</span><span aria-hidden="true">·</span><span>브라우저 보안 연결</span></footer>
 
       <div class="overlay" id="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title" hidden>
         <button class="backdrop" id="backdrop" type="button" aria-label="안내 닫기"></button>
@@ -482,7 +482,7 @@
             <li><span>2</span><p><strong>외부 브라우저에서 열기</strong>, <strong>Chrome에서 열기</strong> 또는 <strong>Safari에서 열기</strong>를 선택하세요.</p></li>
           </ol>
 
-          <button class="copy" id="copy-button" type="button">example.com 주소 복사</button>
+          <button class="copy" id="copy-button" type="button">plailystudio.itch.io 주소 복사</button>
         </section>
       </div>
     </main>
@@ -491,7 +491,7 @@
       (() => {
         'use strict';
 
-        const DESTINATION_URL = 'https://example.com';
+        const DESTINATION_URL = 'https://plailystudio.itch.io';
         const ua = navigator.userAgent || '';
         const overlay = document.getElementById('guide-overlay');
         const platformLabel = document.getElementById('platform-label');
@@ -587,7 +587,7 @@
           }
 
           copyButton.textContent = '주소를 복사했어요';
-          window.setTimeout(() => { copyButton.textContent = 'example.com 주소 복사'; }, 1800);
+          window.setTimeout(() => { copyButton.textContent = 'plailystudio.itch.io 주소 복사'; }, 1800);
         }
 
         document.getElementById('open-button').addEventListener('click', openExternalBrowser);
