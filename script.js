@@ -14,8 +14,12 @@
     const isThreads = /Barcelona/i.test(userAgent);
     const isFacebook = /FBAN|FBAV|FB_IAB/i.test(userAgent);
     const isTikTok = /Musical\.ly|TikTok/i.test(userAgent);
+    const isNaverApp = /NAVER\s*\((?:inapp|higgs);/i.test(userAgent);
     const isKnownInApp = /Twitter|Snapchat|LinkedInApp|KAKAOTALK|DaumApps|Line\//i.test(userAgent);
-    const isAndroidWebView = isAndroid && (/; wv\)/i.test(userAgent) || /\bwv\b/i.test(userAgent));
+    const isAndroidWebView =
+      isAndroid &&
+      !isNaverApp &&
+      (/; wv\)/i.test(userAgent) || /\bwv\b/i.test(userAgent));
 
     return {
       isAndroid,
@@ -68,7 +72,7 @@
       window.location.href =
         `intent://${path}` +
         '#Intent;scheme=https;action=android.intent.action.VIEW;' +
-        'package=com.android.chrome;S.browser_fallback_url=' +
+        'S.browser_fallback_url=' +
         `${encodeURIComponent(DESTINATION_URL)};end`;
       return;
     }
