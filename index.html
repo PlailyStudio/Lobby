@@ -8,7 +8,7 @@
     <meta name="description" content="Plaily Studio와 대학 경쟁률을 외부 브라우저에서 엽니다." />
     <title>Plaily Studio | 링크 선택</title>
     <link rel="stylesheet" href="styles.css?v=ae2a9ab" />
-    <script src="script.js?v=ae2a9ab" defer></script>
+    <script src="script.js?v=no-guide-1" defer></script>
   </head>
   <body>
     <main class="page-shell">
@@ -35,29 +35,9 @@
             관심 대학 경쟁률 모아보기
           </button>
         </div>
-        <button class="text-button" id="help-button" type="button">열리지 않나요?</button>
         <p class="recommendation">앱에 따라 외부 브라우저 열기가 제한될 수 있어요.</p>
       </section>
 
-      <div class="overlay" id="guide-overlay" role="dialog" aria-modal="true" aria-labelledby="guide-title" hidden>
-        <button class="backdrop" id="backdrop" type="button" aria-label="안내 닫기"></button>
-        <section class="guide">
-          <div class="guide-heading">
-            <div>
-              <p id="platform-label">인앱 브라우저에서 열었어요</p>
-              <h2 id="guide-title">외부 브라우저에서 열기</h2>
-            </div>
-            <button class="close-button" id="close-button" type="button" aria-label="안내 닫기">×</button>
-          </div>
-
-          <ol class="steps">
-            <li><span>1</span><p>아래 <strong>주소 복사</strong>로 선택한 링크를 복사하세요.</p></li>
-            <li><span>2</span><p><strong>Safari 또는 Chrome</strong>을 열고 주소창에 붙여넣으세요.</p></li>
-          </ol>
-
-          <button class="copy-button" id="copy-button" type="button">주소 복사</button>
-        </section>
-      </div>
     </main>
   </body>
 </html>
