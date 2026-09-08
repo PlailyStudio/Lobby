@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const DESTINATION_URL = 'https://plailystudio.itch.io';
+  let selectedDestination = document.getElementById('open-button').dataset.destination;
   const userAgent = navigator.userAgent || '';
   const overlay = document.getElementById('guide-overlay');
   const platformLabel = document.getElementById('platform-label');
@@ -53,27 +53,32 @@
     document.body.style.overflow = '';
   }
 
-  function openExternalBrowser() {
+  function openExternalBrowser(destinationUrl) {
+    selectedDestination = destinationUrl;
+    copyButton.textContent = '주소 복사';
     const environment = detectEnvironment();
 
     if (environment.isIOS && environment.isInstagram) {
-      window.location.replace(`instagram://extbrowser/?url=${encodeURIComponent(DESTINATION_URL)}`);
+      showGuide();
+      window.location.href = `instagram://extbrowser/?url=${encodeURIComponent(destinationUrl)}`;
       return;
     }
 
     if (environment.isIOS && environment.isThreads) {
-      window.location.replace(`barcelona://extbrowser/?url=${encodeURIComponent(DESTINATION_URL)}`);
+      showGuide();
+      window.location.href = `barcelona://extbrowser/?url=${encodeURIComponent(destinationUrl)}`;
       return;
     }
 
     if (environment.isAndroid && environment.isInApp) {
-      const destination = new URL(DESTINATION_URL);
+      showGuide();
+      const destination = new URL(destinationUrl);
       const path = destination.host + destination.pathname + destination.search + destination.hash;
       window.location.href =
         `intent://${path}` +
         '#Intent;scheme=https;action=android.intent.action.VIEW;' +
         'S.browser_fallback_url=' +
-        `${encodeURIComponent(DESTINATION_URL)};end`;
+        `${encodeURIComponent(destinationUrl)};end`;
       return;
     }
 
@@ -82,15 +87,15 @@
       return;
     }
 
-    window.location.replace(DESTINATION_URL);
+    window.location.href = destinationUrl;
   }
 
   async function copyAddress() {
     try {
-      await navigator.clipboard.writeText(DESTINATION_URL);
+      await navigator.clipboard.writeText(selectedDestination);
     } catch (_) {
       const field = document.createElement('textarea');
-      field.value = DESTINATION_URL;
+      field.value = selectedDestination;
       field.setAttribute('readonly', '');
       field.style.position = 'fixed';
       field.style.opacity = '0';
@@ -104,7 +109,9 @@
     window.setTimeout(() => { copyButton.textContent = '주소 복사'; }, 1800);
   }
 
-  document.getElementById('open-button').addEventListener('click', openExternalBrowser);
+  document.querySelectorAll('[data-destination]').forEach((button) => {
+    button.addEventListener('click', () => openExternalBrowser(button.dataset.destination));
+  });
   document.getElementById('help-button').addEventListener('click', showGuide);
   document.getElementById('close-button').addEventListener('click', hideGuide);
   document.getElementById('backdrop').addEventListener('click', hideGuide);
@@ -113,5 +120,4 @@
     if (event.key === 'Escape' && !overlay.hidden) hideGuide();
   });
 
-  window.setTimeout(openExternalBrowser, 450);
 })();
