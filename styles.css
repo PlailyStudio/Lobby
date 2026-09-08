@@ -4,6 +4,8 @@
   --black: #090b10;
   --navy: #101a33;
   --navy-hover: #182746;
+  --green: #237a50;
+  --green-hover: #1b6140;
   --gray-600: #5f6675;
   --gray-400: #959baa;
   --gray-200: #e5e8ee;
@@ -86,9 +88,17 @@ h1 {
 
 .destination-buttons {
   display: grid;
-  gap: 12px;
+  gap: 20px;
   width: min(300px, 100%);
   margin: 0 auto;
+}
+
+.button-note {
+  margin: 8px 0 0;
+  color: var(--gray-600);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: keep-all;
 }
 
 .primary-button,
@@ -115,6 +125,9 @@ h1 {
 
 .primary-button:hover,
 .copy-button:hover { background: var(--navy-hover); }
+
+.competition-button { background: var(--green); }
+.competition-button:hover { background: var(--green-hover); }
 
 .primary-button:active,
 .copy-button:active { transform: translateY(1px); }
