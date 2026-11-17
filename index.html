@@ -3,41 +3,50 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#202124" />
     <meta name="referrer" content="no-referrer" />
-    <meta name="description" content="Plaily Studio와 대학 경쟁률을 외부 브라우저에서 엽니다." />
-    <title>Plaily Studio | 링크 선택</title>
-    <link rel="stylesheet" href="styles.css?v=ae2a9ab" />
-    <script src="script.js?v=no-guide-1" defer></script>
+    <meta name="description" content="PlailyStudio의 게임 아카이브와 작은 웹 도구를 모아둔 로비입니다." />
+    <title>PlailyStudio</title>
+    <link rel="stylesheet" href="styles.css?v=competition-border-3" />
+    <script src="script.js?v=screen-snow" defer></script>
+    <script src="ascii-tree.js?v=ground-snow" defer></script>
   </head>
   <body>
-    <main class="page-shell">
-      <header class="site-header">
-        <span class="wordmark">
-          Plaily Studio
-        </span>
-      </header>
+    <header class="site-header">
+      <h1><img class="header-logo" src="assets/header-logo.png" width="32" height="32" alt="" />PlailyStudio</h1>
+    </header>
 
-      <section class="content" aria-live="polite">
-        <img class="loading-image" src="assets/loading-penguin.png" alt="" />
+    <main class="lobby">
+      <div class="profile-art">
+        <img class="penguin" src="assets/studio-logo.png" width="1024" height="1024" alt="" />
+      </div>
 
-        <h1>어디로 이동할까요?</h1>
-        <p class="description">버튼을 누르면 외부 브라우저로 열어요.</p>
-
-        <div class="destination-buttons">
-          <div class="destination-group">
-            <button class="primary-button" id="open-button" type="button" data-destination="https://plailystudio.itch.io" aria-describedby="school-wifi-note">
-              게임 아카이브 열기
-            </button>
-            <p class="button-note" id="school-wifi-note">학교 와이파이로는 접속이 불가할 수 있어요.</p>
-          </div>
-          <button class="primary-button competition-button" id="competition-button" type="button" data-destination="https://univ-comp-rate.ddayul.workers.dev/">
-            관심 대학 경쟁률 모아보기
+      <ul class="project-grid" aria-label="프로젝트" role="list">
+        <li>
+          <button class="project-card" id="open-button" type="button" data-destination="https://plailystudio.itch.io" aria-describedby="school-wifi-note">
+            <span class="card-cover card-cover--archive" aria-hidden="true">
+              <img src="assets/game-archive.png" width="738" height="414" alt="" />
+            </span>
+            <span class="card-title">게임 아카이브</span>
           </button>
-        </div>
-        <p class="recommendation">앱에 따라 외부 브라우저 열기가 제한될 수 있어요.</p>
-      </section>
+          <p class="card-note" id="school-wifi-note">학교 와이파이로는 접속이 불가할 수 있어요.</p>
+        </li>
+        <li>
+          <button class="project-card" id="competition-button" type="button" data-destination="https://univ-comp-rate.ddayul.workers.dev/">
+            <span class="card-cover card-cover--competition" aria-hidden="true">
+              <img src="assets/university-competition.png" width="512" height="512" alt="" />
+            </span>
+            <span class="card-title">관심 대학 경쟁률 모아보기</span>
+          </button>
+        </li>
+      </ul>
 
+      <p class="browser-note">앱에 따라 외부 브라우저 열기가 제한될 수 있어요.</p>
+
+      <canvas id="ascii-christmas-tree" role="img" aria-label="금빛 별과 조명이 달린 아스키 크리스마스 트리">
+        눈 내리는 아스키 크리스마스 트리
+      </canvas>
     </main>
+    <div class="winter-atmosphere" aria-hidden="true"></div>
   </body>
 </html>

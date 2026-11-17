@@ -59,3 +59,34 @@
     button.addEventListener('click', () => openExternalBrowser(button.dataset.destination));
   });
 })();
+
+(() => {
+  'use strict';
+
+  const atmosphere = document.querySelector('.winter-atmosphere');
+  if (!atmosphere) return;
+
+  const wideScreen = matchMedia('(min-width: 760px)');
+  const glyphs = '...*+:';
+
+  function populateSnow() {
+    const count = wideScreen.matches ? 48 : 26;
+    const snowflakes = Array.from({ length: count }, (_, index) => {
+      const flake = document.createElement('span');
+      const duration = 14 + Math.random() * 14;
+      flake.className = 'snowflake';
+      flake.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      flake.style.setProperty('--snow-x', (2 + 96 * (index + Math.random()) / count) + '%');
+      flake.style.setProperty('--snow-size', (8 + Math.random() * 6) + 'px');
+      flake.style.setProperty('--snow-opacity', String(0.2 + Math.random() * 0.36));
+      flake.style.setProperty('--snow-duration', duration + 's');
+      flake.style.setProperty('--snow-delay', (-Math.random() * duration) + 's');
+      flake.style.setProperty('--snow-drift', (-25 + Math.random() * 50) + 'px');
+      return flake;
+    });
+    atmosphere.replaceChildren(...snowflakes);
+  }
+
+  populateSnow();
+  wideScreen.addEventListener('change', populateSnow);
+})();
