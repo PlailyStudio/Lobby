@@ -70,10 +70,10 @@
   const glyphs = '...*+:';
 
   function populateSnow() {
-    const count = wideScreen.matches ? 48 : 26;
+    const count = wideScreen.matches ? 72 : 40;
     const snowflakes = Array.from({ length: count }, (_, index) => {
       const flake = document.createElement('span');
-      const duration = 14 + Math.random() * 14;
+      const duration = 15.5 + Math.random() * 15.5;
       flake.className = 'snowflake';
       flake.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
       flake.style.setProperty('--snow-x', (2 + 96 * (index + Math.random()) / count) + '%');

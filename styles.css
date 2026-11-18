@@ -20,6 +20,10 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   --header-gutter: 0.75rem;
   padding-block: calc(0.625rem + env(safe-area-inset-top)) 0.625rem;
   padding-inline: max(var(--header-gutter), env(safe-area-inset-left))
@@ -33,7 +37,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1.35;
 }
@@ -41,6 +45,29 @@ body {
 .header-logo {
   flex: none;
   border-radius: 7px;
+}
+
+.header-instagram {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding-inline: 0.25rem;
+  border-radius: 0.25rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.header-instagram:is(:hover, :focus-visible) {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.header-instagram:focus-visible {
+  outline: 2px solid var(--frost);
+  outline-offset: 2px;
 }
 
 .lobby {
@@ -151,20 +178,13 @@ body {
   text-underline-offset: 0.18em;
 }
 
-.card-note,
-.browser-note {
-  color: var(--muted);
-  font-size: 0.8125rem;
-  line-height: 1.55;
-  word-break: keep-all;
-}
-
 .card-note {
   margin: 0.25rem 0.25rem 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
   line-height: 1.45;
+  word-break: keep-all;
 }
-
-.browser-note { margin: 1.75rem 0 0; }
 
 #ascii-christmas-tree {
   position: relative;

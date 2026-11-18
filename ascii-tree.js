@@ -24,12 +24,13 @@
 
   const TAU = 2 * Math.PI;
   const trunkExtension = .72;
+  const foliageWidth = 1.21;
   const starHeight = 8.49 + trunkExtension;
   const cameraDistance = 15.8;
   const subjectHeight = 4.44 + trunkExtension * .5;
   const homeYaw = .47;
   const homePitch = .18;
-  const orbitSpeed = .21;
+  const orbitSpeed = .19;
   const frameInterval = 1000 / 24;
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
   const mix = (a, b, t) => a + (b - a) * t;
@@ -61,6 +62,13 @@
     }).join(',') + ')';
   }
 
+  function colorAtTone(palette, tone) {
+    const position = clamp(tone, 0, 1) * (palette.length - 1);
+    const index = Math.floor(position);
+    const next = palette[Math.min(index + 1, palette.length - 1)];
+    return palette[index].map((channel, i) => mix(channel, next[i], position - index));
+  }
+
   let randomState = 278173;
   function random() {
     randomState = (Math.imul(randomState, 1664525) + 1013904223) >>> 0;
@@ -72,8 +80,16 @@
   const baubles = [];
   const lights = [];
   const sky = [];
-  const needles = { color: [83, 195, 125], kind: 'tree' };
-  const wood = { color: [182, 131, 86], kind: 'wood' };
+  const needles = { kind: 'tree' };
+  const wood = { kind: 'wood' };
+  const needleColors = [
+    [58, 124, 123], [53, 141, 121], [60, 155, 111], [73, 168, 101],
+    [90, 179, 99], [111, 187, 108], [130, 193, 122]
+  ];
+  const barkColors = [
+    [105, 78, 75], [131, 91, 75], [157, 106, 77], [185, 130, 88], [207, 153, 110]
+  ];
+  const branchSnowColors = [[130, 164, 180], [165, 189, 198], [195, 211, 212], [225, 230, 222]];
   const gold = { color: [255, 211, 110], kind: 'star' };
   const starEdge = { color: [227, 163, 65], kind: 'star' };
   const ornamentColors = [
@@ -84,7 +100,6 @@
   const candySurface = { color: [239, 65, 74], kind: 'candy' };
   const stockingSurface = { color: [216, 38, 55], kind: 'stocking' };
   const sugar = [249, 245, 228];
-  const snowOnBranches = [224, 235, 235];
 
   function vertex(x, y, z, light, u = 0, v = 0, normal = null) {
     vertices.push({ x, y, z, light, u, v, normal, reflection: 0, warmth: 0, sx: 0, sy: 0, inverse: 0 });
@@ -115,7 +130,7 @@
   const skirts = [
     [.83, 3.25, 2.66], [1.83, 4.24, 2.35], [2.85, 5.12, 2.01],
     [3.84, 5.91, 1.67], [4.78, 6.66, 1.32], [5.66, 7.36, .98], [6.51, 7.95, .66]
-  ].map(([base, top, radius]) => [base + trunkExtension, top + trunkExtension, radius]);
+  ].map(([base, top, radius]) => [base + trunkExtension, top + trunkExtension, radius * foliageWidth]);
   const profile = [
     [0, .57], [.075, .94], [.14, 1], [.23, .91], [.35, .78],
     [.49, .62], [.63, .45], [.78, .30], [.90, .16], [1, .012]
@@ -126,6 +141,10 @@
     return (1 + .074 * Math.cos(phase * 8 + depth * 4)
       + .042 * Math.sin(phase * 13 - depth * 7)
       + .036 * Math.cos(phase * 3));
+  }
+
+  function boughScallop(phase) {
+    return .07 * Math.sin(phase * 8 + .4) + .042 * Math.cos(phase * 17);
   }
 
   for (const [layer, [base, top, radius]] of skirts.entries()) {
@@ -139,7 +158,7 @@
         const angle = TAU * i / count;
         const phase = angle + layer * .49;
         const r = radius * taper * boughScale(angle, depth, layer);
-        const scallop = (.07 * Math.sin(phase * 8 + .4) + .042 * Math.cos(phase * 17)) * (1 - depth);
+        const scallop = boughScallop(phase) * (1 - depth);
         const normal = [Math.cos(angle) * normalScale, -slope * normalScale, Math.sin(angle) * normalScale];
         const light = lightFrom(normal) + .095 * Math.sin(8 * phase + depth * 4)
           + .10 * (random() - .5) - .15 * (1 - clamp(depth * 7, 0, 1));
@@ -153,7 +172,7 @@
     connectRings(rings, count, needles);
   }
 
-  const trunk = [[0, .46], [.14, .40], [.61, .34], [1.4 + trunkExtension, .26]];
+  const trunk = [[0, .58], [.14, .51], [.61, .43], [1.4 + trunkExtension, .33]];
   connectRings(trunk.map(([y, radius]) => Array.from({ length: 36 }, (_, i) => {
     const a = i / 36 * TAU;
     const normal = [Math.cos(a), 0, Math.sin(a)];
@@ -165,13 +184,16 @@
   function foliageRadius(y, angle) {
     let radius = 0;
     skirts.forEach(([base, top, size], layer) => {
-      const depth = (y - base) / (top - base);
+      const scallopedBase = base + boughScallop(angle + layer * .49);
+      const depth = (y - scallopedBase) / (top - scallopedBase);
       if (depth < 0 || depth > 1) return;
       const end = profile.findIndex(([height]) => height >= depth);
-      const a = profile[Math.max(0, end - 1)];
-      const b = profile[end];
-      const taper = a === b ? a[1] : mix(a[1], b[1], (depth - a[0]) / (b[0] - a[0]));
-      radius = Math.max(radius, size * taper * boughScale(angle, depth, layer));
+      const [lowerDepth, lowerTaper] = profile[Math.max(0, end - 1)];
+      const [upperDepth, upperTaper] = profile[end];
+      const lowerRadius = lowerTaper * boughScale(angle, lowerDepth, layer);
+      const upperRadius = upperTaper * boughScale(angle, upperDepth, layer);
+      const fraction = end === 0 ? 0 : (depth - lowerDepth) / (upperDepth - lowerDepth);
+      radius = Math.max(radius, size * mix(lowerRadius, upperRadius, fraction));
     });
     return radius;
   }
@@ -307,8 +329,8 @@
     const fraction = i / (strandCount - 1);
     const a = fraction * TAU * 4.55 + 1.6;
     const y = mix(1.04, 7.7, fraction) + trunkExtension;
-    const radius = 2.87 * Math.pow(1 - fraction, 1.01) + .18;
     const bulb = i % 19 === 0;
+    const radius = foliageRadius(y, a) + (bulb ? .09 : .05);
     return {
       x: Math.cos(a) * radius, y, z: Math.sin(a) * radius,
       glyph: bulb ? '#' : '=',
@@ -362,9 +384,12 @@
     [2.40, .92, 1.37, 1.05, .97, .28, [70, 204, 160], [246, 236, 161]],
     [-3.24, -.76, .84, .60, .79, .36, [166, 112, 235], [242, 204, 255]],
     [2.93, -.87, .89, 1.34, .80, -.18, [67, 115, 211], [213, 237, 250]],
-    [-1.55, -2.52, .98, .74, .90, -.13, [95, 157, 240], [249, 221, 141]]
+    [-1.55, -2.52, .98, .74, .90, -.13, [95, 157, 240], [249, 221, 141]],
+    [-2.03, 1.48, .74, .54, .70, .20, [232, 162, 69], [219, 235, 250]],
+    [-.10, -2.28, 1.10, .62, .84, .18, [224, 111, 74], [255, 226, 166]],
+    [1.60, -1.67, .82, .83, .76, -.31, [65, 169, 120], [255, 211, 148]]
   ];
-  const giftSpread = 1.55;
+  const giftSpread = 1.12;
   const giftRadius = Math.max(...gifts.map(([x, z, width, , depth]) =>
     Math.hypot(x, z) * giftSpread + Math.hypot(width, depth) / 2
   ));
@@ -428,24 +453,15 @@
     });
   }
 
-  const snowflakes = Array.from({ length: 86 }, (_, i) => ({
-    x: mix(-5.4, 5.4, random()), y: random() * 10,
-    z: mix(-4, 4.7, random()), speed: mix(.095, .29, random()),
+  const snowHeight = 10;
+  const snowRestTime = 5;
+  const snowFadeTime = 1.4;
+  const snowflakes = Array.from({ length: 110 }, (_, i) => ({
+    x: mix(-5.4, 5.4, random()), startProgress: random(),
+    z: mix(-4, 4.7, random()), fallDuration: snowHeight / mix(.59, 1.07, random()),
+    nearGroundOnly: i % 3 === 2,
     phase: random() * TAU, alpha: mix(.19, .64, random()), glyph: i < 8 ? '*' : i < 22 ? '+' : '.'
   }));
-
-  const groundSnowRadius = 10.2;
-  const groundSnow = Array.from({ length: 760 }, () => {
-    const angle = random() * TAU;
-    const radius = Math.sqrt(random()) * groundSnowRadius;
-    const shade = 1 - .60 * Math.max(0, 1 - radius / 2.5);
-    const fade = 1 - Math.pow(radius / groundSnowRadius, 3);
-    return {
-      x: radius * Math.cos(angle), y: 0, z: radius * Math.sin(angle),
-      alpha: (.13 + .42 * random()) * shade * fade,
-      glyph: '.,.-:._'[Math.floor(random() * 7)]
-    };
-  });
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let width, height, cellWidth, cellHeight, cols, rows, size, scale, originY, font;
@@ -510,11 +526,15 @@
   function project(p, out = {}) {
     const x = p.x * camera.yawCos - p.z * camera.yawSin;
     const z = p.x * camera.yawSin + p.z * camera.yawCos;
-    const y = p.y - subjectHeight;
-    const toward = z * camera.pitchCos + y * camera.pitchSin;
+    return projectCameraSpace(x, p.y, z, out);
+  }
+
+  function projectCameraSpace(x, y, z, out = {}) {
+    const relativeY = y - subjectHeight;
+    const toward = z * camera.pitchCos + relativeY * camera.pitchSin;
     const inverse = cameraDistance / (cameraDistance - toward);
     out.sx = width * .5 + x * scale * inverse;
-    out.sy = originY - (y * camera.pitchCos - z * camera.pitchSin) * scale * inverse;
+    out.sy = originY - (relativeY * camera.pitchCos - z * camera.pitchSin) * scale * inverse;
     out.inverse = inverse;
     return out;
   }
@@ -647,13 +667,16 @@
           glyph = band[noise > .04 ? 1 : 0];
           highlight = lightGreen;
           tone -= directLight * .17;
-          reflection = reflection * (.48 + .52 * (noise + .5)) + directLight * .45;
+          reflection *= .48 + .52 * (noise + .5);
           if (uBuffer[index] > .34 + noise * .17) {
-            color = snowOnBranches;
+            color = colorAtTone(branchSnowColors, tone);
             highlight = neutral;
             glyph = tone > .64 ? (noise > .06 ? '#' : '+') : (noise > .10 ? 'x' : '=');
-            tone = .41 + tone * .40;
+            tone = .34 + tone * .37;
             reflection *= .38;
+          } else {
+            color = colorAtTone(needleColors, tone);
+            tone *= .87;
           }
           break;
         }
@@ -662,7 +685,7 @@
           color = stripe ? surface.color : sugar;
           highlight = ivory;
           glyph = stripe ? (noise > .12 ? '#' : '%') : (noise > .08 ? '#' : '=');
-          tone = .38 + tone * .67;
+          tone = .30 + tone * .59;
           break;
         }
         case 'stocking': {
@@ -672,7 +695,7 @@
           const toe = u > .37 && v < -.22;
           color = cuff || toe ? sugar : surface.color;
           glyph = cuff ? (noise > 0 ? '#' : '=') : (noise > .02 ? 'x' : '#');
-          tone = .27 + tone * .72;
+          tone = .18 + tone * .66;
           reflection *= .45;
           break;
         }
@@ -717,7 +740,8 @@
           break;
         case 'wood':
           glyph = bark[clamp(Math.floor(tone * 5), 0, 4)][noise > .16 ? 1 : 0];
-          tone += .13 - directLight * .13;
+          color = colorAtTone(barkColors, tone);
+          tone += .04 - directLight * .13;
       }
       sceneCtx.fillStyle = ink(color, tone, reflection, warmth, highlight);
       sceneCtx.fillText(glyph, x, y);
@@ -774,13 +798,13 @@
     backdropCtx.fillStyle = background;
     backdropCtx.fillRect(0, 0, width, height);
     const mistCenter = project({ x: 0, y: 4.2, z: 0 });
-    paintMist(mistCenter.sx, mistCenter.sy, Math.min(width * .48, scale * 5.25),
-      scale * 5.6, '55,101,88', .30);
+    paintMist(mistCenter.sx, mistCenter.sy, Math.min(width * .44, scale * 4.8),
+      scale * 5.15, '55,101,88', .21);
     paintMist(mistCenter.sx + scale * .63, mistCenter.sy + scale * 1.02,
       Math.min(width * .43, scale * 4.3), scale * 3.6, '125,104,65', .14);
     const floor = project({ x: 0, y: .26, z: 0 });
     paintMist(floor.sx, floor.sy - scale * .34,
-      Math.min(width * .47, scale * 8), scale * 1.58, '95,133,123', .18);
+      Math.min(width * .44, scale * 7.5), scale * 1.48, '95,133,123', .13);
     backdropCtx.font = font;
     backdropCtx.textAlign = 'center';
     backdropCtx.textBaseline = 'middle';
@@ -797,15 +821,6 @@
     sceneCtx.font = font;
     sceneCtx.textAlign = 'center';
     sceneCtx.textBaseline = 'middle';
-    sceneCtx.fillStyle = snowColor;
-    const point = {};
-    for (const flake of groundSnow) {
-      project(flake, point);
-      const edge = Math.min(point.sx, width - point.sx, height - point.sy);
-      sceneCtx.globalAlpha = flake.alpha * clamp(edge / 20, 0, 1);
-      sceneCtx.fillText(flake.glyph, point.sx, point.sy);
-    }
-    sceneCtx.globalAlpha = 1;
     bloomCtx.clearRect(0, 0, width, height);
     bloomCtx.font = font;
     bloomCtx.textAlign = 'center';
@@ -838,14 +853,23 @@
 
   function drawFlakes(t) {
     ctx.fillStyle = snowColor;
+    const p = {};
     for (const flake of snowflakes) {
-      const y = (flake.y - t * flake.speed % 10 + 10) % 10;
-      const p = project({ x: flake.x + .22 * Math.sin(t * .35 + flake.phase), y, z: flake.z });
+      const cycleDuration = flake.fallDuration + snowRestTime + snowFadeTime;
+      const age = (t + flake.startProgress * flake.fallDuration) % cycleDuration;
+      const fallTime = Math.min(age, flake.fallDuration);
+      const y = snowHeight * (1 - fallTime / flake.fallDuration);
+      const visibility = flake.nearGroundOnly ? clamp(1 - y * 2, 0, 1) : 1;
+      if (visibility === 0) continue;
+      const x = flake.x + .22 * Math.sin(fallTime * .6 + flake.phase);
+      // Use a fixed view of the snow and floor while the tree and gifts orbit.
+      projectCameraSpace(x, y, flake.z, p);
       const col = Math.floor(p.sx / cellWidth);
       const row = Math.floor(p.sy / cellHeight);
       if (col < 0 || col >= cols || row < 0 || row >= rows) continue;
       if (p.inverse < depthBuffer[row * cols + col]) continue;
-      ctx.globalAlpha = flake.alpha * clamp(y * 2, 0, 1) * clamp((10 - y) * 2, 0, 1);
+      const fade = clamp((cycleDuration - age) / snowFadeTime, 0, 1);
+      ctx.globalAlpha = flake.alpha * clamp((snowHeight - y) * 2, 0, 1) * visibility * fade;
       ctx.fillText(flake.glyph, p.sx, p.sy);
     }
     ctx.globalAlpha = 1;
